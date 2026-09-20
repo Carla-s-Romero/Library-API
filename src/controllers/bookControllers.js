@@ -66,6 +66,24 @@ class BookControllers {
         .json({ mensage: `${error.mensage} - falha na requisição` });
     }
   }
+
+  static async ListBooksByPublisher(req, res) {
+    const publisher = req.query.editora;
+    try {
+      const bookPublisher = await livros.find({ publisher: publisher });
+      if (bookPublisher.length === 0) {
+        res.status(404).json({
+          mensage: "Não existe livros com essa editora"
+        })
+      }
+
+      res.status(200).json({ bookPublisher });
+    } catch (error) {
+      res
+        .status(500)
+        .json({ mensage: `${error.mensage} - falha na busca` });
+    }
+  }
 }
 
 export default BookControllers;

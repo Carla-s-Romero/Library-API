@@ -7,6 +7,7 @@ const livroSchema = new mongoose.Schema({
     description: { type: String },
     price: { type: Number },
     pages: { type: Number },
+    publisher: { type: String },
     author: authorsShema
 }, {versionKey: false });
 
