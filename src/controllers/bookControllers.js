@@ -1,3 +1,4 @@
+import { author } from "../models/Author.js";
 import livros from "../models/Livro.js";
 
 class BookControllers {
@@ -25,12 +26,15 @@ class BookControllers {
   }
 
   static async postBooks(req, res) {
-    try {
-      const newBook = await livros.create(req.body);
+    const newBook = req.body;
 
+    try {
+      const authorsFound = await author.findById(newBook.author);
+      const completeBook = { ...newBook, author: { ...authorsFound._doc } };
+      const createBook = await livros.create(completeBook);
       res.status(201).json({
         message: "Criado com sucesso",
-        livro: newBook,
+        livro: createBook,
       });
     } catch (error) {
       res.status(500).json({
