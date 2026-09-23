@@ -74,7 +74,7 @@ class BookControllers {
       if (bookPublisher.length === 0) {
         res.status(404).json({
           mensage: "Não existe livros com essa editora"
-        })
+        });
       }
 
       res.status(200).json({ bookPublisher });
