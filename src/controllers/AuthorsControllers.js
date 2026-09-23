@@ -15,9 +15,7 @@ class AuthorsControllers {
       const id = req.params.id;
       const nameAutor = await author.findById(id);
 
-      if (nameAutor !== null) {
-        res.status(200).send(nameAutor);
-      } else {
+      if (nameAutor === null) {
         res.status(404).send({ message: "Autor não encontrado" });
       }
     } catch (error) {

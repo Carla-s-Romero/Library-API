@@ -1,13 +1,16 @@
 import mongoose from "mongoose";
+import ErroBasic from "./modelErrors/erroBasic.js";
+import incorrectRequest from "./modelErrors/incorrectRequest.js";
+import ValidationRegistration from "./modelErrors/ValidationRegistration.js";
 
 // eslint-disable-next-line no-unused-vars
-function errorHandler (erro, req, res, next) {
+function errorHandler(erro, req, res, next) {
   if (erro instanceof mongoose.Error.CastError) {
-    res
-      .status(400)
-      .send({ mensage: "um ou mais dados fornecidos, estão incorretos" });
+    new incorrectRequest().sendReply(res);
+  } else if (erro instanceof mongoose.Error.ValidationError) {
+    new ValidationRegistration(erro).sendReply(res);
   } else {
-    res.status(500).json({ mensage: `${erro.mensage} - falha na requisição` });
+    new ErroBasic().sendReply(res);
   }
 }
 

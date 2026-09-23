@@ -11,10 +11,13 @@ class BookControllers {
     }
   }
 
-  static async listOneBookID(req, res,next) {
+  static async listOneBookID(req, res, next) {
     try {
       const id = req.params.id;
       const book = await livros.findById(id);
+      if (book === null) {
+        res.status(404).send({ message: "Livro não encontrado" });
+      }
       res.status(200).json(book);
     } catch (error) {
       next(error);
@@ -63,7 +66,7 @@ class BookControllers {
       const bookPublisher = await livros.find({ publisher: publisher });
       if (bookPublisher.length === 0) {
         res.status(404).json({
-          mensage: "Não existe livros com essa editora"
+          mensage: "Não existe livros com essa editora",
         });
       }
 
