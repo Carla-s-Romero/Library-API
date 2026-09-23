@@ -2,30 +2,26 @@ import { author } from "../models/Author.js";
 import livros from "../models/Livro.js";
 
 class BookControllers {
-  static async listBooks(req, res) {
+  static async listBooks(req, res, next) {
     try {
       const listBooks = await livros.find({});
       res.status(200).json(listBooks);
     } catch (error) {
-      res
-        .status(500)
-        .json({ mensage: `${error.mensage} - falha na requisição` });
+      next(error);
     }
   }
 
-  static async listOneBookID(req, res) {
+  static async listOneBookID(req, res,next) {
     try {
       const id = req.params.id;
       const book = await livros.findById(id);
       res.status(200).json(book);
     } catch (error) {
-      res
-        .status(500)
-        .json({ mensage: `${error.mensage} - falha na requisição` });
+      next(error);
     }
   }
 
-  static async postBooks(req, res) {
+  static async postBooks(req, res, next) {
     const newBook = req.body;
 
     try {
@@ -37,37 +33,31 @@ class BookControllers {
         livro: createBook,
       });
     } catch (error) {
-      res.status(500).json({
-        message: `${error.message} - falha na requisição`,
-      });
+      next(error);
     }
   }
 
-  static async putBooks(req, res) {
+  static async putBooks(req, res, next) {
     try {
       const id = req.params.id;
       const UpdateBook = await livros.findByIdAndUpdate(id, req.body);
       res.status(200).json({ message: "atualizando", livro: UpdateBook });
     } catch (error) {
-      res.status(500).json({
-        message: `${error.message} - falha na requisição`,
-      });
+      next(error);
     }
   }
 
-  static async deleteBooks(req, res) {
+  static async deleteBooks(req, res, next) {
     try {
       const id = req.params.id;
       const UpdateBook = await livros.findByIdAndDelete(id);
       res.status(200).json({ message: "Livro deletado", livro: UpdateBook });
     } catch (error) {
-      res
-        .status(500)
-        .json({ mensage: `${error.mensage} - falha na requisição` });
+      next(error);
     }
   }
 
-  static async ListBooksByPublisher(req, res) {
+  static async ListBooksByPublisher(req, res, next) {
     const publisher = req.query.editora;
     try {
       const bookPublisher = await livros.find({ publisher: publisher });
@@ -79,9 +69,7 @@ class BookControllers {
 
       res.status(200).json({ bookPublisher });
     } catch (error) {
-      res
-        .status(500)
-        .json({ mensage: `${error.mensage} - falha na busca` });
+      next(error);
     }
   }
 }

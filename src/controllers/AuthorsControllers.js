@@ -1,30 +1,31 @@
 import { author } from "../models/Author.js";
 
 class AuthorsControllers {
-  static async listAuthors(req, res) {
+  static async listAuthors(req, res, next) {
     try {
       const listAuthor = await author.find({});
       res.status(200).json(listAuthor);
     } catch (error) {
-      res
-        .status(500)
-        .json({ mensage: `${error.mensage} - falha na requisição` });
+      next(error);
     }
   }
 
-  static async listOneAuthor(req, res) {
+  static async listOneAuthor(req, res, next) {
     try {
       const id = req.params.id;
       const nameAutor = await author.findById(id);
-      res.status(200).json(nameAutor);
+
+      if (nameAutor !== null) {
+        res.status(200).send(nameAutor);
+      } else {
+        res.status(404).send({ message: "Autor não encontrado" });
+      }
     } catch (error) {
-      res
-        .status(500)
-        .json({ mensage: `${error.mensage} - falha na requisição` });
+      next(error);
     }
   }
 
-  static async postAuthor(req, res) {
+  static async postAuthor(req, res, next) {
     try {
       const newAuthor = await author.create(req.body);
 
@@ -33,33 +34,29 @@ class AuthorsControllers {
         author: newAuthor,
       });
     } catch (error) {
-      res.status(500).json({
-        message: `${error.message} - falha na requisição`,
-      });
+      next(error);
     }
   }
 
-  static async putAuthor(req, res) {
+  static async putAuthor(req, res, next) {
     try {
       const id = req.params.id;
       const UpdateAuthors = await author.findByIdAndUpdate(id, req.body);
       res.status(200).json({ message: "atualizando", author: UpdateAuthors });
     } catch (error) {
-      res.status(500).json({
-        message: `${error.message} - falha na requisição`,
-      });
+      next(error);
     }
   }
 
-  static async deleteAuthor(req, res) {
+  static async deleteAuthor(req, res, next) {
     try {
       const id = req.params.id;
       const UpdateAuthors = await author.findByIdAndDelete(id);
-      res.status(200).json({ message: "author deletado", author: UpdateAuthors });
-    } catch (error) {
       res
-        .status(500)
-        .json({ mensage: `${error.mensage} - falha na requisição` });
+        .status(200)
+        .json({ message: "author deletado", author: UpdateAuthors });
+    } catch (error) {
+      next(error);
     }
   }
 }
