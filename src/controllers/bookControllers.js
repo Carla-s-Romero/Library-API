@@ -1,3 +1,4 @@
+import NotFound from "../middlewares/modelErrors/notFound.js";
 import { author } from "../models/Author.js";
 import livros from "../models/Livro.js";
 
@@ -16,7 +17,7 @@ class BookControllers {
       const id = req.params.id;
       const book = await livros.findById(id);
       if (book === null) {
-        res.status(404).send({ message: "Livro não encontrado" });
+        next( new NotFound("Livro não encontrado"));
       }
       res.status(200).json(book);
     } catch (error) {
@@ -44,6 +45,9 @@ class BookControllers {
     try {
       const id = req.params.id;
       const UpdateBook = await livros.findByIdAndUpdate(id, req.body);
+      if (UpdateBook === null) {
+        return next( new NotFound("O livro não existe no banco de dados"));
+      }
       res.status(200).json({ message: "atualizando", livro: UpdateBook });
     } catch (error) {
       next(error);
@@ -54,6 +58,9 @@ class BookControllers {
     try {
       const id = req.params.id;
       const UpdateBook = await livros.findByIdAndDelete(id);
+      if (UpdateBook === null) {
+        return next( new NotFound("O livro não existe no banco de dados"));
+      }
       res.status(200).json({ message: "Livro deletado", livro: UpdateBook });
     } catch (error) {
       next(error);
@@ -65,9 +72,7 @@ class BookControllers {
     try {
       const bookPublisher = await livros.find({ publisher: publisher });
       if (bookPublisher.length === 0) {
-        res.status(404).json({
-          mensage: "Não existe livros com essa editora",
-        });
+        return next( new NotFound("Não existe livros com essa editora"));
       }
 
       res.status(200).json({ bookPublisher });

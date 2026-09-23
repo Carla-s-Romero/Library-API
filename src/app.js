@@ -2,6 +2,7 @@ import express from "express";
 import connectDatabase from "./config/dbconect.js";
 import routes from "./router/index.js";
 import errorHandler from "./middlewares/errorHandler.js";
+import page404 from "./middlewares/page404.js";
 
 const connect = await connectDatabase();
 
@@ -15,6 +16,8 @@ connect.once("open", () => {
 
 const app = express();
 routes(app);
+
+app.use(page404);
 
 app.use(errorHandler);
 
