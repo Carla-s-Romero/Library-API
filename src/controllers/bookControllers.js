@@ -62,12 +62,17 @@ class BookControllers {
     }
   }
 
-  static async ListBooksByPublisher(req, res, next) {
-    const publisher = req.query.editora;
+  static async filter(req, res, next) {
     try {
-      const bookPublisher = await livro.find({ publisher: publisher });
+      const {publisher, title } = req.query;
+      const query = {};
+
+      if (publisher) query.publisher = publisher;
+      if (title) query.title = {$regex: title, $options: "i"};
+
+      const bookPublisher = await livro.find(query);
       if (bookPublisher.length === 0) {
-        return next( new NotFound("Não existe livro com essa editora"));
+        return next( new NotFound("Não existe livro com esses paramentros de busca"));
       }
 
       res.status(200).json({ bookPublisher });
