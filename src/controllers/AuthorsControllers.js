@@ -1,5 +1,5 @@
 import NotFound from "../middlewares/modelErrors/notFound.js";
-import { author } from "../models/Author.js";
+import { author } from "../models/index.js";
 
 class AuthorsControllers {
   static async listAuthors(req, res, next) {
@@ -19,6 +19,7 @@ class AuthorsControllers {
       if (nameAutor === null) {
         next( new NotFound("Autor não encontrado"));
       }
+      return res.status(200).json(nameAutor);
     } catch (error) {
       next(error);
     }
