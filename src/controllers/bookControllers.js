@@ -1,11 +1,25 @@
 import NotFound from "../middlewares/modelErrors/notFound.js";
-import { livro, author } from "../models/index.js";;
-
+import { livro, author } from "../models/index.js";
+import incorrectRequest from "../middlewares/modelErrors/incorrectRequest.js";
 class BookControllers {
   static async listBooks(req, res, next) {
     try {
-      const listBooks = await livro.find({}).populate("author");
-      res.status(200).json(listBooks);
+      let { limitNumber = 5, pagNumber = 1 } = req.query;
+      limitNumber = Number(limitNumber);
+      pagNumber = Number(pagNumber);
+
+      if (limitNumber > 0 && pagNumber > 0){
+        const listBooks = await livro
+          .find({})
+          .skip((pagNumber - 1) * limitNumber)
+          .limit(limitNumber)
+          .populate("author")
+          .exec();
+
+        res.status(200).json(listBooks);
+      } else {
+        next( new incorrectRequest("Os parâmetros limitNumber e pagNumber devem ser números inteiros maiores que zero"));
+      }
     } catch (error) {
       next(error);
     }
@@ -16,7 +30,7 @@ class BookControllers {
       const id = req.params.id;
       const book = await livro.findById(id);
       if (book === null) {
-        next( new NotFound("Livro não encontrado"));
+        next(new NotFound("Livro não encontrado"));
       }
       res.status(200).json(book);
     } catch (error) {
@@ -41,7 +55,7 @@ class BookControllers {
       const id = req.params.id;
       const UpdateBook = await livro.findByIdAndUpdate(id, req.body);
       if (UpdateBook === null) {
-        return next( new NotFound("O livro não existe no banco de dados"));
+        return next(new NotFound("O livro não existe no banco de dados"));
       }
       res.status(200).json({ message: "atualizando", livro: UpdateBook });
     } catch (error) {
@@ -54,7 +68,7 @@ class BookControllers {
       const id = req.params.id;
       const UpdateBook = await livro.findByIdAndDelete(id);
       if (UpdateBook === null) {
-        return next( new NotFound("O livro não existe no banco de dados"));
+        return next(new NotFound("O livro não existe no banco de dados"));
       }
       res.status(200).json({ message: "Livro deletado", livro: UpdateBook });
     } catch (error) {
@@ -68,7 +82,7 @@ class BookControllers {
 
       if (query !== null) {
         const bookPublisher = await livro.find(query).populate("author");
-        res.status(200).send( bookPublisher);
+        res.status(200).send(bookPublisher);
       } else {
         res.status(200).send([]);
       }
@@ -79,20 +93,20 @@ class BookControllers {
 }
 
 async function processQuery(parametros) {
-  const {publisher, title, MinPage, MaxPage, nameAuthor } = parametros;
+  const { publisher, title, MinPage, MaxPage, nameAuthor } = parametros;
   const query = {};
 
   if (publisher) query.publisher = publisher;
-  if (title) query.title = {$regex: title, $options: "i"};
+  if (title) query.title = { $regex: title, $options: "i" };
 
   if (MinPage || MaxPage) query.pages = {};
 
-  if(MinPage) query.pages.$gte = Number(MinPage);
-  if(MaxPage) query.pages.$lte = Number(MaxPage);
+  if (MinPage) query.pages.$gte = Number(MinPage);
+  if (MaxPage) query.pages.$lte = Number(MaxPage);
 
-  if(nameAuthor) {
+  if (nameAuthor) {
     const authorFound = await author.findOne({
-      name: { $regex: `^${nameAuthor}$`, $options: "i" }
+      name: { $regex: `^${nameAuthor}$`, $options: "i" },
     });
     if (authorFound === null) {
       return null;
