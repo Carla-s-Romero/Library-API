@@ -1,29 +1,12 @@
 import NotFound from "../middlewares/modelErrors/notFound.js";
 import { livro, author } from "../models/index.js";
-import incorrectRequest from "../middlewares/modelErrors/incorrectRequest.js";
+import livros from "../models/Livro.js";
 class BookControllers {
   static async listBooks(req, res, next) {
     try {
-      let { limitNumber = 5, pagNumber = 1, sort = "_id:1"} = req.query;
-      let [field, ord] = sort.split(":");
-
-      limitNumber = Number(limitNumber);
-      pagNumber = Number(pagNumber);
-      ord = Number(ord);
-
-      if (limitNumber > 0 && pagNumber > 0){
-        const listBooks = await livro
-          .find()
-          .sort({[field]: ord})
-          .skip((pagNumber - 1) * limitNumber)
-          .limit(limitNumber)
-          .populate("author")
-          .exec();
-
-        res.status(200).json(listBooks);
-      } else {
-        next( new incorrectRequest("Os parâmetros limitNumber e pagNumber devem ser números inteiros maiores que zero"));
-      }
+      const searchBook = livros.find().populate("author");
+      req.result = searchBook;
+      next();
     } catch (error) {
       next(error);
     }
@@ -83,10 +66,12 @@ class BookControllers {
   static async filter(req, res, next) {
     try {
       const query = await processQuery(req.query);
-
       if (query !== null) {
-        const bookPublisher = await livro.find(query).populate("author");
-        res.status(200).send(bookPublisher);
+        const bookPublisher = livro
+          .find(query)
+          .populate("author");
+        req.result = bookPublisher;
+        next();
       } else {
         res.status(200).send([]);
       }
