@@ -1,10 +1,10 @@
 import NotFound from "../middlewares/modelErrors/notFound.js";
-import { livro } from "../models/index.js";
+import { livro, author } from "../models/index.js";;
 
 class BookControllers {
   static async listBooks(req, res, next) {
     try {
-      const listBooks = await livro.find({});
+      const listBooks = await livro.find({}).populate("author");
       res.status(200).json(listBooks);
     } catch (error) {
       next(error);
@@ -64,22 +64,43 @@ class BookControllers {
 
   static async filter(req, res, next) {
     try {
-      const {publisher, title } = req.query;
-      const query = {};
+      const query = await processQuery(req.query);
 
-      if (publisher) query.publisher = publisher;
-      if (title) query.title = {$regex: title, $options: "i"};
-
-      const bookPublisher = await livro.find(query);
-      if (bookPublisher.length === 0) {
-        return next( new NotFound("Não existe livro com esses paramentros de busca"));
+      if (query !== null) {
+        const bookPublisher = await livro.find(query).populate("author");
+        res.status(200).send( bookPublisher);
+      } else {
+        res.status(200).send([]);
       }
-
-      res.status(200).json({ bookPublisher });
     } catch (error) {
       next(error);
     }
   }
+}
+
+async function processQuery(parametros) {
+  const {publisher, title, MinPage, MaxPage, nameAuthor } = parametros;
+  const query = {};
+
+  if (publisher) query.publisher = publisher;
+  if (title) query.title = {$regex: title, $options: "i"};
+
+  if (MinPage || MaxPage) query.pages = {};
+
+  if(MinPage) query.pages.$gte = Number(MinPage);
+  if(MaxPage) query.pages.$lte = Number(MaxPage);
+
+  if(nameAuthor) {
+    const authorFound = await author.findOne({
+      name: { $regex: `^${nameAuthor}$`, $options: "i" }
+    });
+    if (authorFound === null) {
+      return null;
+    }
+    query.author = authorFound._id;
+  }
+
+  return query;
 }
 
 export default BookControllers;

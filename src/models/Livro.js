@@ -29,7 +29,7 @@ const livroSchema = new mongoose.Schema(
     },
     author: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "authors",
+      ref: "Autores",
       required: [true, "O autor é obrigatório"],
     },
   },
