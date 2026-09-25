@@ -4,13 +4,17 @@ import incorrectRequest from "../middlewares/modelErrors/incorrectRequest.js";
 class BookControllers {
   static async listBooks(req, res, next) {
     try {
-      let { limitNumber = 5, pagNumber = 1 } = req.query;
+      let { limitNumber = 5, pagNumber = 1, sort = "_id:1"} = req.query;
+      let [field, ord] = sort.split(":");
+
       limitNumber = Number(limitNumber);
       pagNumber = Number(pagNumber);
+      ord = Number(ord);
 
       if (limitNumber > 0 && pagNumber > 0){
         const listBooks = await livro
-          .find({})
+          .find()
+          .sort({[field]: ord})
           .skip((pagNumber - 1) * limitNumber)
           .limit(limitNumber)
           .populate("author")
